@@ -1,9 +1,243 @@
-// --- enhancement: only enable touch controls on mobile sizes ---
-function isMobileWidth() {
-  return window.innerWidth <= 768;
-}
-// existing code may call showTouchControls(); ensure they check isMobileWidth() before removing 'hidden'
+/* === Enhancements script: particles, audio clicks, loader, HUD and UI interactions === */
+(function () {
+  // Helpers
+  function isMobileWidth() {
+    return window.innerWidth <= 768;
+  }
+  function $(sel) {
+    return document.querySelector(sel);
+  }
+  function $all(sel) {
+    return Array.from(document.querySelectorAll(sel));
+  }
 
+  // Simple sound via WebAudio
+  const AudioSys = (function () {
+    let ctx = null;
+    function ensure() {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    function click() {
+      try {
+        ensure();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = 600;
+        g.gain.value = 0.0001;
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.001);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+        o.stop(ctx.currentTime + 0.18);
+      } catch (e) {}
+    }
+    return { click };
+  })();
+
+  // Particles
+  function startParticles() {
+    const canvas = $("#bgParticles");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W = (canvas.width = innerWidth);
+    let H = (canvas.height = innerHeight);
+    const particles = [];
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.8 + 0.6,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
+        alpha: 0.2 + Math.random() * 0.6,
+      });
+    }
+    function onResize() {
+      W = canvas.width = innerWidth;
+      H = canvas.height = innerHeight;
+    }
+    addEventListener("resize", onResize);
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      for (let p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(120,170,255," + p.alpha + ")";
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  }
+
+  // UI elements
+  const loader = $("#siteLoader");
+  const splash = $("#splash");
+  const startBtn = $("#startBtn");
+  const tutorialBtn = $("#tutorialBtn");
+  const hud = $("#hud");
+  const scoreValue = $("#scoreValue");
+  const levelValue = $("#levelValue");
+  const timerValue = $("#timerValue");
+  const endModal = $("#endModal");
+  const finalScore = $("#finalScore");
+  const retryBtn = $("#retryBtn");
+
+  let score = 0,
+    level = 1,
+    seconds = 0,
+    timerInterval = null;
+
+  function showLoader() {
+    if (loader) {
+      loader.classList.add("active");
+      loader.setAttribute("aria-hidden", "false");
+    }
+  }
+  function hideLoader() {
+    if (loader) {
+      loader.classList.remove("active");
+      loader.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function showSplash() {
+    splash && splash.classList.remove("hidden");
+  }
+  function hideSplash() {
+    splash && splash.classList.add("hidden");
+  }
+
+  function showHUD() {
+    hud && hud.classList.remove("hidden");
+  }
+  function hideHUD() {
+    hud && hud.classList.add("hidden");
+  }
+
+  function startTimer() {
+    seconds = 0;
+    timerInterval && clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      seconds++;
+      const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const ss = String(seconds % 60).padStart(2, "0");
+      timerValue.textContent = mm + ":" + ss;
+    }, 1000);
+  }
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function beginGame() {
+    hideSplash();
+    hideLoader();
+    AudioSys.click();
+    score = 0;
+    level = 1;
+    scoreValue.textContent = score;
+    levelValue.textContent = level;
+    showHUD();
+    startTimer();
+    // show touch controls only on mobile
+    const tc = document.getElementById("touchControls");
+    if (tc) {
+      if (isMobileWidth()) {
+        tc.classList.remove("hidden");
+      } else {
+        tc.classList.add("hidden");
+      }
+    }
+    // TODO: hook into actual game start logic (existing functions)
+  }
+
+  function endGame() {
+    stopTimer();
+    hideHUD();
+    finalScore.textContent = score;
+    endModal.classList.remove("hidden");
+    // determine medal
+    const m = score >= 150 ? "🏅 Ouro" : score >= 80 ? "🥈 Prata" : "🥉 Bronze";
+    const med = document.getElementById("medal");
+    if (med) med.textContent = m;
+    AudioSys.click();
+  }
+
+  // small helpers for score update
+  function addScore(v) {
+    score += v;
+    scoreValue.textContent = score;
+    // level progression simple rule
+    if (score >= level * 50) {
+      level++;
+      levelValue.textContent = level;
+    }
+  }
+
+  // Button bindings
+  startBtn &&
+    startBtn.addEventListener("click", () => {
+      AudioSys.click();
+      beginGame();
+    });
+  tutorialBtn &&
+    tutorialBtn.addEventListener("click", () => {
+      AudioSys.click();
+      alert(
+        "Tutorial: Use W/A/S/D ou setas para movimentar. E = receber. Espaço pegar/soltar."
+      );
+    });
+  retryBtn &&
+    retryBtn.addEventListener("click", () => {
+      AudioSys.click();
+      endModal.classList.add("hidden");
+      beginGame();
+    });
+
+  // touch control clicks should produce a sound
+  document.addEventListener(
+    "click",
+    function (e) {
+      if (
+        e.target &&
+        e.target.classList &&
+        e.target.classList.contains("touchBtn")
+      ) {
+        AudioSys.click();
+      }
+    },
+    true
+  );
+
+  // start particles and hide loader after DOM ready
+  document.addEventListener("DOMContentLoaded", function () {
+    startParticles();
+    // small delay to simulate loading
+    setTimeout(function () {
+      hideLoader();
+      showSplash();
+    }, 700);
+  });
+
+  // expose some functions for integration with existing game
+  window.logisticaUI = {
+    addScore,
+    endGame,
+    beginGame,
+    isMobileWidth,
+  };
+})();
+
+/* Original script preserved below */
 /* Logística Master v2
    - Canvas-based, industrial visuals, sounds via WebAudio
    - Improved movement (acceleration), collisions, box 3D draw, glow area indicators

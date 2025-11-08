@@ -6,9 +6,56 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Logística Master v2 — Simulação Profissional</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
   </head>
 
   <body>
+    <!-- Particle background -->
+    <canvas id="bgParticles" aria-hidden="true"></canvas>
+
+    <!-- Loader -->
+    <div id="siteLoader" class="loader active" aria-hidden="false">
+      <div class="loader-inner">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="loader-text">Carregando Logística Master...</div>
+    </div>
+
+    <!-- Splash / Title -->
+    <div id="splash" class="splash hidden" role="dialog" aria-modal="true" aria-label="Abertura do jogo">
+      <div class="splash-card">
+        <h1>Logística Master</h1>
+        <p class="lead">Simulação: Recebimento → Armazenar → Expedir</p>
+        <div class="splash-actions">
+          <button id="startBtn" class="btn primary" aria-label="Iniciar Simulação">Iniciar Simulação</button>
+          <button id="tutorialBtn" class="btn ghost" aria-label="Tutorial">Tutorial</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="hud" class="hud hidden" aria-live="polite">
+      <div class="score">Pontuação: <span id="scoreValue">0</span></div>
+      <div class="level">Nível: <span id="levelValue">1</span></div>
+      <div class="timer">Tempo: <span id="timerValue">00:00</span></div>
+    </div>
+
+    <!-- End modal -->
+    <div id="endModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Resultados">
+      <div class="modal-inner">
+        <h2>Fim da Simulação</h2>
+        <p class="result">Sua pontuação: <strong id="finalScore">0</strong></p>
+        <div id="medal" class="medal">—</div>
+        <div class="modal-actions">
+          <button id="retryBtn" class="btn primary" aria-label="Jogar Novamente">Jogar Novamente</button>
+          <button id="shareBtn" class="btn ghost" aria-label="Salvar/Compartilhar">Salvar/Compartilhar</button>
+        </div>
+      </div>
+    </div>
+
     <div id="overlay" class="centered">
       <div id="menuCard">
         <h1>Logística Master</h1>
@@ -36,10 +83,10 @@
         </div>
 
         <div class="row">
-          <button id="startBtn" class="primary">Iniciar Simulação</button>
-          <button id="tutorialBtn" class="ghost">Tutorial</button>
-          <button id="showRankBtn" class="ghost">Ranking</button>
-          <button id="settingsBtn" class="ghost">Configurações</button>
+          <button id="startBtn" class="primary" aria-label="Iniciar Simulação">Iniciar Simulação</button>
+          <button id="tutorialBtn" class="ghost" aria-label="Tutorial">Tutorial</button>
+          <button id="showRankBtn" class="ghost" aria-label="Ranking">Ranking</button>
+          <button id="settingsBtn" class="ghost" aria-label="Configurações">Configurações</button>
         </div>
 
         <p class="hint">Movimento: W/A/S/D ou setas • E = receber • Espaço = pegar/soltar • Enter = ação</p>
@@ -65,9 +112,9 @@
           </div>
         </div>
         <div class="row">
-          <button id="tutorialPrev" class="ghost" disabled>Anterior</button>
-          <button id="tutorialNext" class="primary">Próximo</button>
-          <button id="tutorialClose" class="ghost">Fechar</button>
+          <button id="tutorialPrev" class="ghost" disabled aria-label="Anterior">Anterior</button>
+          <button id="tutorialNext" class="primary" aria-label="Próximo">Próximo</button>
+          <button id="tutorialClose" class="ghost" aria-label="Fechar">Fechar</button>
         </div>
       </div>
     </div>
@@ -85,19 +132,19 @@
           <input id="customControls" type="checkbox" />
         </div>
         <div class="row">
-          <button id="settingsClose" class="primary">Salvar</button>
+          <button id="settingsClose" class="primary" aria-label="Salvar">Salvar</button>
         </div>
       </div>
     </div>
 
     <!-- Touch Controls for Mobile -->
-    <div id="touchControls" class="hidden" aria-label="Controles de toque" role="region">
-      <button id="touchUp" class="touchBtn" type="button" aria-label="↑">↑</button>
-      <button id="touchDown" class="touchBtn" type="button" aria-label="↓">↓</button>
-      <button id="touchLeft" class="touchBtn" type="button" aria-label="←">←</button>
-      <button id="touchRight" class="touchBtn" type="button" aria-label="→">→</button>
-      <button id="touchPick" class="touchBtn action" type="button" aria-label="Pegar/Soltar">Pegar/Soltar</button>
-      <button id="touchReceive" class="touchBtn action" type="button" aria-label="Receber">Receber</button>
+    <div id="touchControls" class="hidden">
+      <button id="touchUp" class="touchBtn" aria-label="↑">↑</button>
+      <button id="touchDown" class="touchBtn" aria-label="↓">↓</button>
+      <button id="touchLeft" class="touchBtn" aria-label="←">←</button>
+      <button id="touchRight" class="touchBtn" aria-label="→">→</button>
+      <button id="touchPick" class="touchBtn action" aria-label="Pegar/Soltar">Pegar/Soltar</button>
+      <button id="touchReceive" class="touchBtn action" aria-label="Receber">Receber</button>
     </div>
 
     <div id="gameUI" class="hidden">
@@ -109,7 +156,7 @@
         <div class="hudItem">Erros: <strong id="hudErrors">0</strong></div>
         <div class="hudItem">Caixas restantes: <strong id="hudRemaining">0</strong></div>
         <div style="flex:1"></div>
-        <button id="pauseBtn" class="small">Pausar</button>
+        <button id="pauseBtn" class="small" aria-label="Pausar">Pausar</button>
       </div>
 
       <div id="gameWrap">
@@ -127,8 +174,8 @@
           <div class="panelBlock" id="panelRanking"></div>
 
           <div style="margin-top:10px">
-            <button id="restartBtn" class="primary small">Reiniciar</button>
-            <button id="exitBtn" class="ghost small">Sair</button>
+            <button id="restartBtn" class="primary small" aria-label="Reiniciar">Reiniciar</button>
+            <button id="exitBtn" class="ghost small" aria-label="Sair">Sair</button>
           </div>
         </div>
       </div>
@@ -148,9 +195,9 @@
           </ul>
         </div>
         <div class="row">
-          <button id="toggleStatsBtn" class="ghost">Mostrar Estatísticas</button>
-          <button id="saveScoreBtn" class="primary">Salvar no ranking</button>
-          <button id="playAgainBtn" class="ghost">Jogar novamente</button>
+          <button id="toggleStatsBtn" class="ghost" aria-label="Mostrar Estatísticas">Mostrar Estatísticas</button>
+          <button id="saveScoreBtn" class="primary" aria-label="Salvar no ranking">Salvar no ranking</button>
+          <button id="playAgainBtn" class="ghost" aria-label="Jogar novamente">Jogar novamente</button>
         </div>
       </div>
     </div>

@@ -378,117 +378,310 @@ body {
   }
 }
 
-/* ===== Enhancements: mobile-only touch controls & improved visuals ===== */
+/* === Added enhancements === */
 
-/* Basic reset for touch controls container */
+/* === Top Tier Enhancements - Dark Elegant Theme === */
+:root {
+  --bg: #071226;
+  --panel: rgba(8, 12, 20, 0.56);
+  --glass: rgba(255, 255, 255, 0.03);
+  --accent: #ff8a00;
+  --accent-2: #167bff;
+  --muted: #9fb0c8;
+  --text: #e6eef6;
+  --glass-border: rgba(255, 255, 255, 0.04);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --shadow-lg: 0 10px 30px rgba(2, 8, 20, 0.6);
+  --transition: 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+}
+
+/* Full-screen gradient + soft vignette */
+body {
+  background: radial-gradient(
+      ellipse at 20% 20%,
+      rgba(24, 34, 58, 0.9) 0%,
+      rgba(7, 10, 18, 1) 40%
+    ),
+    linear-gradient(180deg, rgba(6, 10, 18, 1) 0%, rgba(4, 7, 12, 1) 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Particle canvas sits behind everything */
+#bgParticles {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Loader */
+.loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 1200;
+  background: linear-gradient(180deg, rgba(2, 4, 8, 0.6), rgba(2, 4, 8, 0.4));
+  backdrop-filter: blur(6px);
+  transition: opacity var(--transition), visibility var(--transition);
+  visibility: hidden;
+  opacity: 0;
+}
+.loader.active {
+  visibility: visible;
+  opacity: 1;
+}
+.loader-inner {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.loader .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--accent), #ff4d00);
+  transform-origin: center;
+  animation: loader-bounce 900ms infinite;
+}
+.loader .dot:nth-child(2) {
+  animation-delay: 120ms;
+  background: linear-gradient(180deg, #ffd27a, #ff9b3d);
+}
+.loader .dot:nth-child(3) {
+  animation-delay: 240ms;
+  background: linear-gradient(180deg, #9bd1ff, #45a6ff);
+}
+@keyframes loader-bounce {
+  0% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+}
+.loader-text {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Splash */
+.splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.splash-card {
+  width: min(640px, 92%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
+  text-align: center;
+}
+.splash-card h1 {
+  color: var(--accent);
+  font-size: 34px;
+  margin: 0 0 6px;
+  letter-spacing: 0.4px;
+}
+.splash-card .lead {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.splash-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* HUD */
+.hud {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  gap: 18px;
+  background: var(--panel);
+  padding: 10px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
+  align-items: center;
+}
+.hud .score,
+.hud .level,
+.hud .timer {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+.modal .modal-inner {
+  width: min(520px, 94%);
+  padding: 20px;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.modal .medal {
+  font-size: 30px;
+  margin: 10px 0;
+  color: var(--accent);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--glass-border);
+}
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent-2), #0f59d6);
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(20, 60, 120, 0.28);
+}
+.btn:active {
+  transform: translateY(1px) scale(0.995);
+}
+
+/* Touch controls (keep previous styles but polished) */
 #touchControls {
-  display: none !important; /* hidden by default on desktop */
-}
-
-/* Preserve JS-driven .hidden behavior: when .hidden exists, always hide */
-#touchControls.hidden {
   display: none !important;
+  z-index: 1001;
+}
+#touchControls:not(.hidden) {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  border-radius: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 24px rgba(2, 8, 20, 0.5);
 }
 
-/* Mobile: show controls when not .hidden */
-@media (max-width: 768px) {
-  #touchControls:not(.hidden) {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
+/* individual touch buttons */
+.touchBtn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  font-weight: 700;
+}
+.touchBtn:not(.action) {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+.touchBtn.action {
+  background: linear-gradient(180deg, #45a6ff, #167bff);
+  color: white;
+  padding: 8px 14px;
+}
+
+/* small responsive tweaks */
+@media (max-width: 480px) {
+  .splash-card h1 {
+    font-size: 28px;
+  }
+  .hud {
     gap: 10px;
-    position: fixed;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 900;
-    padding: 8px 12px;
-    backdrop-filter: blur(6px);
-    background: rgba(8, 12, 20, 0.18);
-    border-radius: 28px;
-    box-shadow: 0 6px 20px rgba(2, 8, 20, 0.6);
+    padding: 8px;
+    top: 12px;
   }
-
-  /* individual buttons */
-  #touchControls .touchBtn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px 12px;
-    border-radius: 22px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 4px 10px rgba(2, 8, 20, 0.5);
-    transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.12s ease;
-  }
-
-  #touchControls .touchBtn:active {
-    transform: translateY(1px) scale(0.99);
-  }
-
-  /* icon-only buttons */
-  #touchControls .touchBtn:not(.action) {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e6eef6;
-  }
-
-  /* action (blue) buttons */
-  #touchControls .touchBtn.action {
-    background: linear-gradient(180deg, #45a6ff 0%, #167bff 100%);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 22px;
-    min-width: 88px;
-  }
-
-  /* small screens: stack */
-  @media (max-width: 360px) {
-    #touchControls:not(.hidden) {
-      gap: 6px;
-      padding: 6px 8px;
-      bottom: 12px;
-    }
-    #touchControls .touchBtn.action {
-      min-width: 72px;
-      padding: 8px 10px;
-      font-size: 14px;
-    }
+  #touchControls:not(.hidden) {
+    bottom: 12px;
+    padding: 6px 8px;
+    gap: 8px;
   }
 }
 
-/* Improve contrast for the modal title area and make the main modal responsive */
-@media (max-width: 900px) {
-  .modal {
-    width: calc(100% - 40px) !important;
-    max-width: 520px;
-    margin: 20px auto;
-    position: relative;
-    left: 0;
-    transform: none !important;
-  }
-  .centered {
-    align-items: flex-start;
-    padding-top: 20px;
-  }
-}
-
-/* Accessibility: focus outlines */
-#touchControls .touchBtn:focus {
+/* Accessibility focus */
+.btn:focus,
+.touchBtn:focus {
   outline: 3px solid rgba(80, 150, 255, 0.18);
   outline-offset: 3px;
 }
 
-/* Minor visual polish for small UI elements */
-.footer-note {
-  opacity: 0.9;
+/* Drawer for small hints */
+.hint {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  background: var(--panel);
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: var(--muted);
+  border: 1px solid var(--glass-border);
   font-size: 13px;
-  color: #c9d6e6;
 }
