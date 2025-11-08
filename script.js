@@ -1,3 +1,9 @@
+// --- enhancement: only enable touch controls on mobile sizes ---
+function isMobileWidth() {
+  return window.innerWidth <= 768;
+}
+// existing code may call showTouchControls(); ensure they check isMobileWidth() before removing 'hidden'
+
 /* Logística Master v2
    - Canvas-based, industrial visuals, sounds via WebAudio
    - Improved movement (acceleration), collisions, box 3D draw, glow area indicators

@@ -377,3 +377,118 @@ body {
     z-index: 100;
   }
 }
+
+/* ===== Enhancements: mobile-only touch controls & improved visuals ===== */
+
+/* Basic reset for touch controls container */
+#touchControls {
+  display: none !important; /* hidden by default on desktop */
+}
+
+/* Preserve JS-driven .hidden behavior: when .hidden exists, always hide */
+#touchControls.hidden {
+  display: none !important;
+}
+
+/* Mobile: show controls when not .hidden */
+@media (max-width: 768px) {
+  #touchControls:not(.hidden) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    padding: 8px 12px;
+    backdrop-filter: blur(6px);
+    background: rgba(8, 12, 20, 0.18);
+    border-radius: 28px;
+    box-shadow: 0 6px 20px rgba(2, 8, 20, 0.6);
+  }
+
+  /* individual buttons */
+  #touchControls .touchBtn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 22px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 10px rgba(2, 8, 20, 0.5);
+    transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.12s ease;
+  }
+
+  #touchControls .touchBtn:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  /* icon-only buttons */
+  #touchControls .touchBtn:not(.action) {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e6eef6;
+  }
+
+  /* action (blue) buttons */
+  #touchControls .touchBtn.action {
+    background: linear-gradient(180deg, #45a6ff 0%, #167bff 100%);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 22px;
+    min-width: 88px;
+  }
+
+  /* small screens: stack */
+  @media (max-width: 360px) {
+    #touchControls:not(.hidden) {
+      gap: 6px;
+      padding: 6px 8px;
+      bottom: 12px;
+    }
+    #touchControls .touchBtn.action {
+      min-width: 72px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+  }
+}
+
+/* Improve contrast for the modal title area and make the main modal responsive */
+@media (max-width: 900px) {
+  .modal {
+    width: calc(100% - 40px) !important;
+    max-width: 520px;
+    margin: 20px auto;
+    position: relative;
+    left: 0;
+    transform: none !important;
+  }
+  .centered {
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+}
+
+/* Accessibility: focus outlines */
+#touchControls .touchBtn:focus {
+  outline: 3px solid rgba(80, 150, 255, 0.18);
+  outline-offset: 3px;
+}
+
+/* Minor visual polish for small UI elements */
+.footer-note {
+  opacity: 0.9;
+  font-size: 13px;
+  color: #c9d6e6;
+}
