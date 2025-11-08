@@ -75,7 +75,7 @@ body {
   border-radius: 8px;
   border: none;
   background: rgba(255, 255, 255, 0.02);
-  color: #e6eef6;
+  color: black;
 }
 
 .primary {
@@ -356,5 +356,24 @@ body {
   #settingsModal .modalCard {
     width: 90%;
     max-width: 350px;
+  }
+}
+
+/* Esconder por padrão */
+#touchControls.hidden {
+  display: none !important;
+}
+
+/* Quando estiver sem a classe 'hidden', só mostra se for mobile */
+@media (max-width: 768px) {
+  #touchControls:not(.hidden) {
+    display: flex !important;
+    justify-content: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
   }
 }

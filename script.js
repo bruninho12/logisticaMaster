@@ -545,6 +545,7 @@ function tryPickOrDrop() {
       STATE.storedCount = (STATE.storedCount || 0) + 1;
       playDrop();
       playSuccess();
+      addParticles(dropX, dropY, 8, "#00ff00"); // green particles for success
       logPanel("Caixa armazenada.");
       // if all stored, advance to shipping
       const storedCount = STATE.crates.filter((c) => c.stored).length;
@@ -578,6 +579,7 @@ function tryPickOrDrop() {
       if (!isPracticeMode) STATE.score += 50;
       playDrop();
       playSuccess();
+      addParticles(dropX, dropY, 8, "#00ff00"); // green particles for success
       logPanel("Caixa expedida.");
       updateHUD();
       // check finish
@@ -598,6 +600,7 @@ function tryPickOrDrop() {
       STATE.score -= 10;
     }
     updateHUD();
+    addParticles(dropX, dropY, 8, "#ff0000"); // red particles for error
     logPanel(
       "Caixa solta em local incorreto." +
         (isPracticeMode ? "" : " Penalidade aplicada."),
@@ -623,6 +626,7 @@ function tryPickOrDrop() {
       nearest.picked = true;
       STATE.player.carrying = nearest.id;
       playPick();
+      addParticles(px, py, 5, "#ffff00"); // yellow particles for pick
       logPanel("Você pegou uma caixa.");
       return;
     } else {
@@ -862,14 +866,38 @@ function drawAreaBorders() {
 
 function drawCrate3D(c, highlight = false) {
   ctx.save();
-  // basic 3D: top face, left face, front face
-  const topColor = shadeColor(c.color, 8);
-  const leftColor = shadeColor(c.color, -8);
+  // Enhanced 3D: top, left, right, front faces with gradients
+  const topColor = shadeColor(c.color, 12);
+  const leftColor = shadeColor(c.color, -12);
+  const rightColor = shadeColor(c.color, -6);
   const frontColor = c.color;
-  // draw left face (slight iso)
+
+  // Create gradients for depth
+  const leftGrad = ctx.createLinearGradient(c.x - 6, c.y, c.x, c.y);
+  leftGrad.addColorStop(0, leftColor);
+  leftGrad.addColorStop(1, shadeColor(leftColor, -5));
+
+  const rightGrad = ctx.createLinearGradient(
+    c.x + c.w,
+    c.y,
+    c.x + c.w + 6,
+    c.y
+  );
+  rightGrad.addColorStop(0, rightColor);
+  rightGrad.addColorStop(1, shadeColor(rightColor, -5));
+
+  const topGrad = ctx.createLinearGradient(c.x, c.y - 6, c.x, c.y);
+  topGrad.addColorStop(0, topColor);
+  topGrad.addColorStop(1, shadeColor(topColor, -5));
+
+  const frontGrad = ctx.createLinearGradient(c.x, c.y, c.x, c.y + c.h);
+  frontGrad.addColorStop(0, frontColor);
+  frontGrad.addColorStop(1, shadeColor(frontColor, -10));
+
+  // draw left face
   const lx = c.x - 6,
     ly = c.y + 6;
-  ctx.fillStyle = leftColor;
+  ctx.fillStyle = leftGrad;
   ctx.beginPath();
   ctx.moveTo(lx, ly);
   ctx.lineTo(lx, ly + c.h);
@@ -878,12 +906,24 @@ function drawCrate3D(c, highlight = false) {
   ctx.closePath();
   ctx.fill();
 
+  // draw right face
+  const rx = c.x + c.w,
+    ry = c.y - 6;
+  ctx.fillStyle = rightGrad;
+  ctx.beginPath();
+  ctx.moveTo(rx, ry);
+  ctx.lineTo(rx, ry + c.h);
+  ctx.lineTo(rx + 6, ry + c.h - 6);
+  ctx.lineTo(rx + 6, ry - 6);
+  ctx.closePath();
+  ctx.fill();
+
   // front face
-  ctx.fillStyle = frontColor;
+  ctx.fillStyle = frontGrad;
   ctx.fillRect(c.x, c.y, c.w, c.h);
 
   // top face
-  ctx.fillStyle = topColor;
+  ctx.fillStyle = topGrad;
   ctx.beginPath();
   ctx.moveTo(c.x, c.y);
   ctx.lineTo(c.x + 6, c.y - 6);
@@ -892,9 +932,21 @@ function drawCrate3D(c, highlight = false) {
   ctx.closePath();
   ctx.fill();
 
-  // shadow
-  ctx.fillStyle = "rgba(0,0,0,0.18)";
-  ctx.fillRect(c.x, c.y + c.h + 6, c.w, 6);
+  // dynamic shadow based on "light" position (simulate sun from top-left)
+  const shadowOffsetX = 4;
+  const shadowOffsetY = 6;
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(
+    c.x + c.w / 2 + shadowOffsetX,
+    c.y + c.h + shadowOffsetY,
+    c.w / 2,
+    4,
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
 
   // label
   ctx.fillStyle = "#08121a";
@@ -923,6 +975,17 @@ function drawPlayer() {
   ctx.ellipse(p.x, p.y + 18, 18, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // legs (animated)
+  ctx.fillStyle = "#15394b";
+  if (Math.abs(p.vx) + Math.abs(p.vy) > 0.2) {
+    const legStep = Math.sin(STATE.elapsed * 12) * 4;
+    ctx.fillRect(p.x - 6, p.y + 6 + legStep, 4, 12);
+    ctx.fillRect(p.x + 2, p.y + 6 - legStep, 4, 12);
+  } else {
+    ctx.fillRect(p.x - 6, p.y + 6, 4, 12);
+    ctx.fillRect(p.x + 2, p.y + 6, 4, 12);
+  }
+
   // body rectangle
   ctx.fillStyle = "#ffdd99";
   ctx.fillRect(p.x - 10, p.y - 18, 20, 24);
@@ -936,12 +999,12 @@ function drawPlayer() {
   ctx.fillStyle = "#ff8a00";
   ctx.fillRect(p.x - 10 + tilt * 0.2, p.y - 10, 20, 6);
 
-  // small arms indicators (simulate walking)
+  // arms (simulate walking)
   ctx.fillStyle = "#15394b";
   if (Math.abs(p.vx) + Math.abs(p.vy) > 0.2) {
-    const step = Math.sin(STATE.elapsed * 12) * 3;
-    ctx.fillRect(p.x - 14, p.y - 2 + step, 4, 10);
-    ctx.fillRect(p.x + 10, p.y - 2 - step, 4, 10);
+    const armStep = Math.sin(STATE.elapsed * 12) * 3;
+    ctx.fillRect(p.x - 14, p.y - 2 + armStep, 4, 10);
+    ctx.fillRect(p.x + 10, p.y - 2 - armStep, 4, 10);
   } else {
     ctx.fillRect(p.x - 14, p.y - 2, 4, 10);
     ctx.fillRect(p.x + 10, p.y - 2, 4, 10);

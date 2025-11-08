@@ -29,7 +29,7 @@
 ## 5. Melhorar Visuais
 
 - [x] Adicionar animações suaves (transições de movimento do jogador)
-- [ ] Implementar efeitos de partículas para ações (pegar/soltar caixas)
+- [x] Implementar efeitos de partículas para ações (pegar/soltar caixas)
 - [ ] Melhorar renderização 3D das caixas e jogador
 - [ ] Adicionar sombras dinâmicas e iluminação
 
