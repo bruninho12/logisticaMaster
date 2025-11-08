@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Logística Master v2 — Simulação Profissional</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <div id="overlay" class="centered">
+      <div id="menuCard">
+        <h1>Logística Master</h1>
+        <p class="muted">Simulação: Recebimento → Armazenar → Expedir</p>
+
+        <div class="row">
+          <label>Nível</label>
+          <select id="levelSelect">
+            <option value="0">Iniciante (5 caixas)</option>
+            <option value="1">Intermediário (8 caixas)</option>
+            <option value="2">Avançado (12 caixas)</option>
+            <option value="3">Especialista (15 caixas)</option>
+            <option value="4">Mestre (18 caixas)</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>Música ambiente</label>
+          <input id="musicToggle" type="checkbox" checked />
+        </div>
+
+        <div class="row">
+          <label>Modo Prática</label>
+          <input id="practiceMode" type="checkbox" />
+        </div>
+
+        <div class="row">
+          <button id="startBtn" class="primary">Iniciar Simulação</button>
+          <button id="tutorialBtn" class="ghost">Tutorial</button>
+          <button id="showRankBtn" class="ghost">Ranking</button>
+          <button id="settingsBtn" class="ghost">Configurações</button>
+        </div>
+
+        <p class="hint">Movimento: W/A/S/D ou setas • E = receber • Espaço = pegar/soltar • Enter = ação</p>
+      </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorialOverlay" class="centered hidden">
+      <div id="tutorialCard">
+        <h2>Tutorial: Como Jogar</h2>
+        <div id="tutorialContent">
+          <div class="tutorialStep">
+            <h3>Passo 1: Recebimento</h3>
+            <p>Pressione E na área azul (Recebimento) para iniciar. Pegue caixas com Espaço.</p>
+          </div>
+          <div class="tutorialStep">
+            <h3>Passo 2: Armazenamento</h3>
+            <p>Leve as caixas à área cinza (Estoque) e solte com Espaço.</p>
+          </div>
+          <div class="tutorialStep">
+            <h3>Passo 3: Expedição</h3>
+            <p>Após armazenar todas, leve ao laranja (Expedição) e solte.</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="tutorialPrev" class="ghost" disabled>Anterior</button>
+          <button id="tutorialNext" class="primary">Próximo</button>
+          <button id="tutorialClose" class="ghost">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+      <div class="modalCard">
+        <h2>Configurações Avançadas</h2>
+        <div class="row">
+          <label>Volume Música</label>
+          <input id="volumeSlider" type="range" min="0" max="1" step="0.1" value="0.06">
+        </div>
+        <div class="row">
+          <label>Controles Customizados</label>
+          <input id="customControls" type="checkbox" />
+        </div>
+        <div class="row">
+          <button id="settingsClose" class="primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Touch Controls for Mobile -->
+    <div id="touchControls" class="hidden">
+      <button id="touchUp" class="touchBtn">↑</button>
+      <button id="touchDown" class="touchBtn">↓</button>
+      <button id="touchLeft" class="touchBtn">←</button>
+      <button id="touchRight" class="touchBtn">→</button>
+      <button id="touchPick" class="touchBtn action">Pegar/Soltar</button>
+      <button id="touchReceive" class="touchBtn action">Receber</button>
+    </div>
+
+    <div id="gameUI" class="hidden">
+      <div id="hudTop">
+        <div class="hudItem">Nível: <strong id="hudLevel">Iniciante</strong></div>
+        <div class="hudItem">Etapa: <strong id="hudPhase">Receber</strong></div>
+        <div class="hudItem">Tempo: <strong id="hudTime">0s</strong></div>
+        <div class="hudItem">Pontos: <strong id="hudScore">0</strong></div>
+        <div class="hudItem">Erros: <strong id="hudErrors">0</strong></div>
+        <div class="hudItem">Caixas restantes: <strong id="hudRemaining">0</strong></div>
+        <div style="flex:1"></div>
+        <button id="pauseBtn" class="small">Pausar</button>
+      </div>
+
+      <div id="gameWrap">
+        <canvas id="game" width="1100" height="640" aria-label="Canvas do jogo"></canvas>
+
+        <div id="sidePanel">
+          <div class="panelTitle">Objetivo</div>
+          <div class="panelBlock" id="panelObjective">Receba as caixas do caminhão e armazene-as corretamente. Depois,
+            leve para expedição.</div>
+
+          <div class="panelTitle">Mensagens</div>
+          <div class="panelBlock" id="panelMessages"></div>
+
+          <div class="panelTitle">Ranking local</div>
+          <div class="panelBlock" id="panelRanking"></div>
+
+          <div style="margin-top:10px">
+            <button id="restartBtn" class="primary small">Reiniciar</button>
+            <button id="exitBtn" class="ghost small">Sair</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="endModal" class="modal hidden">
+      <div class="modalCard">
+        <h2>🏁 Nível Concluído</h2>
+        <p id="finalSummary"></p>
+        <div id="expandedStats" class="hidden">
+          <p><strong>Estatísticas Detalhadas:</strong></p>
+          <ul>
+            <li>Média de tempo por caixa: <span id="avgTimePerBox">0s</span></li>
+            <li>Caixas armazenadas: <span id="storedBoxes">0</span></li>
+            <li>Caixas expedidas: <span id="shippedBoxes">0</span></li>
+            <li>Eficiência: <span id="efficiency">0%</span></li>
+          </ul>
+        </div>
+        <div class="row">
+          <button id="toggleStatsBtn" class="ghost">Mostrar Estatísticas</button>
+          <button id="saveScoreBtn" class="primary">Salvar no ranking</button>
+          <button id="playAgainBtn" class="ghost">Jogar novamente</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+
+</html>
